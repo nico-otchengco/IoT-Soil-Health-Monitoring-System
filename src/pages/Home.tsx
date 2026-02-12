@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import PROTOTYPE from '../assets/prototype.png';
+import PROTOTYPE from '../assets/PROTOTYPE.png';
 
 export default function Home() {
   const nav = useNavigate();
