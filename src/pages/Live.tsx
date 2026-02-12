@@ -288,9 +288,16 @@ function buildAltReco(): string {
     return 'Alternative crop suggestions will appear here once stable soil readings are available. For now, focus on reaching the optimal ranges for the selected crop.';
   }
 
-  const recommendedCrops: string[] = [];  // Initialize this array properly
+  console.log('=== ALT CROP RECOMMENDATION DEBUG ===');
+  console.log('Current crop:', crop);
+  console.log('Telem data:', telem);
+  console.log('Alt crop recommendations from DB:', altCropRecommendations);
+
+  let recommendedCrop: string | null = null
 
   PARAMS.forEach((p) => {
+    if (recommendedCrop) return;
+
     const rawVal = telem[p.key] as any;
     const numVal = rawVal !== null && rawVal !== undefined ? Number(rawVal) : null;
 
@@ -299,14 +306,13 @@ function buildAltReco(): string {
     const thr = thrMap[p.key as string];
     if (!thr) return;
 
-    // Alternative crop logic for soil moisture
     if (p.key === 'moist_pct') {
-      if (numVal < 40) { // If moisture is below 40% (dry)
+      if (p.key === 'moist_pct' && numVal < 40) {
         const altCrop = altCropRecommendations.find(
           (rec) => rec.soil_param === 'Soil Moisture' && rec.reading_range === '<40% (dry)'
         );
-        if (altCrop && !recommendedCrops.includes(altCrop.recommended_crop)) {
-          recommendedCrops.push(altCrop.recommended_crop);  // Add only if not already in the list
+        if (altCrop) {
+          recommendedCrop = altCrop.recommended_crop;
         }
       }
     }
@@ -317,8 +323,8 @@ function buildAltReco(): string {
         const altCrop = altCropRecommendations.find(
           (rec) => rec.soil_param === 'EC' && rec.reading_range === 'High EC (>2.0 mS/cm)'
         );
-        if (altCrop && !recommendedCrops.includes(altCrop.recommended_crop)) {
-          recommendedCrops.push(altCrop.recommended_crop);  // Add only if not already in the list
+        if (altCrop) {
+          recommendedCrop = altCrop.recommended_crop;
         }
       }
     }
@@ -329,19 +335,32 @@ function buildAltReco(): string {
         const altCrop = altCropRecommendations.find(
           (rec) => rec.soil_param === 'Soil Temperature' && rec.reading_range === '>30° C (hot soil)'
         );
-        if (altCrop && !recommendedCrops.includes(altCrop.recommended_crop)) {
-          recommendedCrops.push(altCrop.recommended_crop);  // Add only if not already in the list
+        if (altCrop) {
+          recommendedCrop = altCrop.recommended_crop;
         }
       }
     }
   });
 
-  // Return bullet points for the recommendations
-  if (recommendedCrops.length === 0) {
-    return `• The selected crop is doing well. If issues arise, consider alternative crops like Lemongrass or Okra based on soil conditions.`;
+
+  if (recommendedCrop) {
+    const cropString = String(recommendedCrop);
+
+    if (cropString.includes(' or ')) {
+      const crops = cropString.split(' or ').map(c => c.trim());
+      const currentCropName = String(crop).toLowerCase();
+      const differentCrop = crops.find(c => c.toLowerCase() !== currentCropName);
+      recommendedCrop = differentCrop || crops[0];
+    }
   }
 
-  return `• Based on your current soil conditions, consider switching to one of the following alternative crops: ${recommendedCrops.join(', ')}.`;
+  const currentCropName = String(crop).toLowerCase();
+  const recoCropName = recommendedCrop ? String(recommendedCrop).toLowerCase() : '';
+
+  if (!recommendedCrop || recoCropName === currentCropName) {
+    return `• The selected crop is doing well. If issues arise, consider alternative crops based on soil conditions.`;
+  }
+  return `• Based on your current soil conditions, consider switching to: ${recommendedCrop}.`;
 }
 
 
