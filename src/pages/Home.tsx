@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import PROTOTYPE from '../assets/prototype.png';
 
 export default function Home() {
   const nav = useNavigate();
@@ -37,12 +38,7 @@ export default function Home() {
 
         <div className="home-hero-card">
           <div className="home-hero-card-inner">
-            <div className="home-hero-tag">Device Preview</div>
-            <div className="home-hero-picture-text">SMARTSOIL PICTURE</div>
-            <p className="home-hero-picture-sub">
-              Replace this area with a render or photo of your SmartSoil setup
-              in your final version.
-            </p>
+              <img src={PROTOTYPE} alt="SmartSoil Prototype" />
           </div>
         </div>
       </div>
