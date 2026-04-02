@@ -1,73 +1,98 @@
-# React + TypeScript + Vite
+# Smart Soil Health Monitoring System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack IoT-based system designed for **real-time soil health analysis** and **data-driven agricultural decision-making**.  
+This project integrates embedded systems, cloud infrastructure, and a web-based dashboard to monitor and analyze critical soil parameters.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Overview
 
-## React Compiler
+The system collects and processes soil data including:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Soil Moisture  
+- Electrical Conductivity (EC)  
+- pH Level  
+- Nitrogen (N)  
+- Phosphorus (P)  
+- Potassium (K)  
+- Temperature  
 
-## Expanding the ESLint configuration
+Data is transmitted from the device to the cloud and visualized through a web dashboard, enabling users to monitor soil conditions and make informed decisions such as **crop selection and soil treatment**.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Key Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Real-Time Monitoring** – Live sensor readings from the field  
+- **Data Visualization** – Interactive graphs and historical logs  
+- **Crop Recommendation System** – Suggests alternative crops based on soil condition  
+- **Soil Treatment Insights** – Provides recommendations to improve soil quality  
+- **Cloud Integration** – Centralized data storage and access via Supabase  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## System Architecture
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Sensors → ESP32 → RS485 (Modbus RTU) → WiFi → Supabase → Web Dashboard
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+
+---
+
+## Hardware Components
+
+- ESP32 NodeMCU-32S  
+- Capacitive Soil Moisture Sensor v1.2  
+- MAX485 to TTL Converter Module  
+- DS18B20 Waterproof Temperature Sensor  
+- SEN603 MODBUS-RTU RS485 EC & pH Sensor  
+- SEN605 MODBUS-RTU RS485 NPK Sensor  
+
+---
+
+## Software & Technologies
+
+- **Embedded Systems:** Arduino (ESP32)  
+- **Communication Protocol:** Modbus RTU (RS485)  
+- **Frontend:** React + Typescript 
+- **Backend / Database:** Supabase  
+- **Data Handling:** REST API  
+
+---
+
+## Advanced Features
+
+### Offline Data Buffering
+- Ensures **zero data loss** during network interruptions  
+- Sensor readings are stored locally and automatically synced once connection is restored  
+
+---
+
+### Dual RS485 Bus (Parallel Sensor Communication)
+- Utilizes **two hardware UART interfaces**  
+- Separates EC/pH and NPK sensors to avoid communication conflicts  
+- Improves system stability and performance  
+
+---
+
+### Modbus CRC Validation
+- Implements **CRC16 checksum verification**  
+- Ensures only valid sensor data is processed  
+- Prevents corrupted readings from affecting analytics  
+
+---
+
+### RS485 Retry Mechanism
+- Automatic retry system for sensor communication  
+- Handles intermittent noise and unstable connections  
+- Increases reliability in real-world deployment  
+
+---
+
+## Dashboard Features
+
+- Real-time sensor data monitoring  
+- Historical data logs  
+- Graph-based visualization  
+- Crop recommendation system  
+- Soil treatment suggestions  
+
