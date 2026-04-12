@@ -15,9 +15,9 @@ import {
   Bar
 } from 'recharts';
 
-// Hist row type (sens_rdg_30m)
+// Hist row type (sens_rdg_10m)
 type HistRow = {
-  bkt_30m: string;
+  bkt_10m: string;
   crop: Crop;
   ph: number | null;
   moist_pct: number | null;
@@ -75,13 +75,13 @@ export default function Analytics() {
       const from = new Date(Date.now() - cfg.hours * 60 * 60 * 1000).toISOString();
 
       const { data, error } = await sb
-        .from('sens_rdg_30m')
+        .from('sens_rdg_10m')
         .select(
-          'bkt_30m, crop, ph, moist_pct, temp_c, ec_ms, n_mgkg, p_mgkg, k_mgkg',
+          'bkt_10m, crop, ph, moist_pct, temp_c, ec_ms, n_mgkg, p_mgkg, k_mgkg',
         )
         .eq('crop', crop)
-        .gte('bkt_30m', from)
-        .order('bkt_30m', { ascending: true });
+        .gte('bkt_10m', from)
+        .order('bkt_10m', { ascending: true });
 
       if (error) {
         console.error('err_load_hist', error);
@@ -144,7 +144,7 @@ export default function Analytics() {
   const chartData = useMemo(
     () =>
       rows.map((r) => ({
-        t: new Date(r.bkt_30m).toLocaleString(),
+        t: new Date(r.bkt_10m).toLocaleString(),
         ph: r.ph,
         moist_pct: r.moist_pct,
         temp_c: r.temp_c,

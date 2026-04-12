@@ -1,17 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
-
-const supabaseUrl = import.meta.env.VITE_SB_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SB_ANON_KEY as string;
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("VITE_SB_URL and VITE_SB_ANON_KEY must be set");
-}
-const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+import { sb as supabase } from '../SBClient';
 
 interface SensRow {
   id: string;
-  bkt_30m: string | null;
+  bkt_10m: string | null;
   dev_id: string | null;
   crop: string | null;
   crop_text?: string | null;
@@ -32,7 +25,7 @@ function formatNumber(val: number | null | undefined) {
 }
 
 const ALLOWED_SORT_COLUMNS = [
-  "bkt_30m",
+  "bkt_10m",
   "crop_text",
   "device_name",
   "ph",
@@ -57,13 +50,13 @@ export default function DatabaseTable(): React.JSX.Element {
   const [rowLimit, setRowLimit] = useState<number | "all">("all");
 
   const [sortBy, setSortBy] = useState<{ col: string; asc: boolean }>({
-    col: "bkt_30m",
+    col: "bkt_10m",
     asc: false,
   });
 
   const selectColumns = useMemo(
     () =>
-      `id, bkt_30m, dev_id, crop, crop_text, device_name, src_created_at,
+      `id, bkt_10m, dev_id, crop, crop_text, device_name, src_created_at,
        ph, moist_pct, temp_c, ec_ms, n_mgkg, p_mgkg, k_mgkg`,
     []
   );
@@ -84,12 +77,12 @@ export default function DatabaseTable(): React.JSX.Element {
       try {
         const sortCol = ALLOWED_SORT_COLUMNS.includes(sortBy.col)
           ? sortBy.col
-          : "bkt_30m";
+          : "bkt_10m";
 
         let query = supabase
           .from("sens_rdg_with_device")
           .select(selectColumns, { count: "exact" })
-          .gte("bkt_30m", getTimeThreshold(timeFilter))
+          .gte("bkt_10m", getTimeThreshold(timeFilter))
           .order(sortCol, { ascending: sortBy.asc });
 
         if (search.trim().length > 0) {
@@ -132,7 +125,7 @@ export default function DatabaseTable(): React.JSX.Element {
       let query = supabase
         .from("sens_rdg_with_device")
         .select(selectColumns)
-        .gte("bkt_30m", getTimeThreshold(timeFilter));
+        .gte("bkt_10m", getTimeThreshold(timeFilter));
 
       if (search.trim().length > 0) {
         query = query.ilike("crop_text", `%${search.trim()}%`);
@@ -144,7 +137,7 @@ export default function DatabaseTable(): React.JSX.Element {
 
       const sortCol = ALLOWED_SORT_COLUMNS.includes(sortBy.col)
         ? sortBy.col
-        : "bkt_30m";
+        : "bkt_10m";
 
       const res = await query.order(sortCol, {
         ascending: sortBy.asc,
@@ -156,7 +149,7 @@ export default function DatabaseTable(): React.JSX.Element {
 
       const normalized = (data ?? []).map((r) => ({
         id: r.id,
-        time: r.bkt_30m ?? r.src_created_at ?? "",
+        time: r.bkt_10m ?? r.src_created_at ?? "",
         device: r.device_name ?? r.dev_id ?? "",
         crop: r.crop_text ?? r.crop ?? "",
         ph: r.ph ?? "",
@@ -182,7 +175,7 @@ export default function DatabaseTable(): React.JSX.Element {
   }
 
   function toggleSort(col: string) {
-    const safeCol = ALLOWED_SORT_COLUMNS.includes(col) ? col : "bkt_30m";
+    const safeCol = ALLOWED_SORT_COLUMNS.includes(col) ? col : "bkt_10m";
     if (sortBy.col === safeCol) {
       setSortBy({ col: safeCol, asc: !sortBy.asc });
     } else {
@@ -245,8 +238,8 @@ export default function DatabaseTable(): React.JSX.Element {
           <thead>
             <tr>
               <th className="th">#</th>
-              <th className="th sortable" onClick={() => toggleSort("bkt_30m")}>
-                Time {sortBy.col === "bkt_30m" ? (sortBy.asc ? "▲" : "▼") : ""}
+              <th className="th sortable" onClick={() => toggleSort("bkt_10m")}>
+                Time {sortBy.col === "bkt_10m" ? (sortBy.asc ? "▲" : "▼") : ""}
               </th>
               <th className="th">Device</th>
               <th className="th sortable" onClick={() => toggleSort("crop_text")}>
@@ -266,7 +259,7 @@ export default function DatabaseTable(): React.JSX.Element {
               <tr key={r.id} className={idx % 2 === 0 ? "row-even" : "row-odd"}>
                 <td className="td">{idx + 1}</td>
                 <td className="td">
-                  {r.bkt_30m ? new Date(r.bkt_30m).toLocaleString() : "-"}
+                  {r.bkt_10m ? new Date(r.bkt_10m).toLocaleString() : "-"}
                 </td>
                 <td className="td">{r.device_name ?? r.dev_id ?? "-"}</td>
                 <td className="td">{r.crop_text ?? r.crop ?? "-"}</td>
