@@ -59,7 +59,9 @@ function App() {
     fetchDevice();
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await sb.auth.signOut();
+    localStorage.clear();
     setIsAuthenticated(false);
     setDeviceName('...');
   };
