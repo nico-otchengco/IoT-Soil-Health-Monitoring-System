@@ -11,10 +11,32 @@ const Database = lazy(() => import('./pages/Database'));
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true); 
   const [isSignUp, setIsSignUp] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [deviceName, setDeviceName] = useState<string>('...');
   const sidebarRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+        fetchDevice();
+      }
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setIsAuthenticated(true);
+        fetchDevice();
+      } else {
+        setIsAuthenticated(false);
+        setDeviceName('...');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const fetchDevice = async () => {
     const { data: { user } } = await sb.auth.getUser();
@@ -66,6 +88,10 @@ function App() {
       document.removeEventListener('click', hndlOutClick);
     };
   }, [sidebarOpen]);
+
+  if (authLoading) {
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: 14, color: '#9ca3af' }}>Loading...</div>;
+  }
 
   if (!isAuthenticated) {
     return (
