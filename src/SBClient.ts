@@ -9,5 +9,17 @@ export const sb = createClient(url, key, {
     storageKey: 'smartsoil',
     storage: window.localStorage,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+  }
+});
+
+sb.auth.onAuthStateChange((event) => {
+  if (event === 'TOKEN_REFRESHED') {
+    console.log('Session refreshed successfully');
+  }
+
+  if (event === 'SIGNED_OUT') {
+    window.localStorage.removeItem('smartsoil');
+    window.location.href = '/login';
   }
 });

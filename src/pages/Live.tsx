@@ -55,31 +55,39 @@ export default function Live() {
   const [predictions, setPredictions] = useState<any[]>([]);
   const [predLoading, setPredLoading] = useState(true);
 
+  // ✅ FIXED: reads dev_id from user_device table instead of user metadata
   useEffect(() => {
     (async () => {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { setLoading(false); return; }
 
-      const deviceId = user.user_metadata?.device_id;
-      if (!deviceId) { setLoading(false); return; }
+      const { data: userDevice, error: udError } = await sb
+        .from('user_device')
+        .select('dev_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (udError || !userDevice) {
+        console.error('No device linked to this user:', udError);
+        setLoading(false);
+        return;
+      }
 
       const { data: devData, error } = await sb
         .from('device')
         .select('id, name, ing_tok, cur_crop')
-        .eq('id', deviceId)
+        .eq('id', userDevice.dev_id)
         .maybeSingle();
 
-      if (error) {
+      if (error || !devData) {
         console.error('Error loading device:', error);
         setLoading(false);
         return;
       }
 
-      if (devData) {
-        const d = devData as Dev;
-        setDev(d);
-        if (d.cur_crop) setCrop(d.cur_crop);
-      }
+      const d = devData as Dev;
+      setDev(d);
+      if (d.cur_crop) setCrop(d.cur_crop);
 
       setLoading(false);
     })();
@@ -100,20 +108,21 @@ export default function Live() {
   }
 
   useEffect(() => {
+    if (!dev?.id) return;
     let cancelled = false;
 
     (async () => {
       const { data, error } = await sb
         .from('telem_rt')
         .select('*')
+        .eq('dev_id', dev?.id)
         .eq('crop', crop)
-        .limit(1)
         .maybeSingle();
 
       if (error) {
         console.error('Error loading rt telem:', error);
         return;
-      }
+      } 
 
       if (!cancelled) {
         setTelem(data as TelemRow | null);
@@ -121,9 +130,11 @@ export default function Live() {
     })();
 
     return () => { cancelled = true; };
-  }, [crop]);
+  }, [dev?.id, crop]);
 
   useEffect(() => {
+    if (!dev) return;
+
     const channel = sb
       .channel('telem_rt_stream')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'telem_rt' },
@@ -243,6 +254,8 @@ export default function Live() {
   }, [dev, crop]);
 
   useEffect(() => {
+    if (!dev) return;
+    
     async function fetchChartData() {
       const { data, error } = await sb
         .from('sens_rdg_10m')
@@ -256,7 +269,7 @@ export default function Live() {
       } else {
         setChartData(
           (data as any[]).map((r) => ({
-            t: new Date(r.bkt_10m).toLocaleString(), // ← also fixed bkt_30m → bkt_10m here
+            t: new Date(r.bkt_10m).toLocaleString(),
             ph: r.ph,
             moist_pct: r.moist_pct,
             temp_c: r.temp_c,
@@ -284,7 +297,6 @@ export default function Live() {
     const treatments: string[] = [];
     const fertilizers: string[] = [];
 
-    // Issues still follow PARAMS order for display
     PARAMS.forEach((p) => {
       const rawVal = telem[p.key] as any;
       const numVal = rawVal !== null && rawVal !== undefined ? Number(rawVal) : null;
@@ -313,7 +325,6 @@ export default function Live() {
 
       issues.push(entry);
     });
-
 
     TREATMENT_PRIORITY.forEach((paramKey) => {
       const p = PARAMS.find(p => p.key === paramKey);
@@ -361,7 +372,6 @@ export default function Live() {
       return 'Alternative crop suggestions will appear here once stable soil readings are available.';
     }
 
-    // Find the most critical out-of-range param using TREATMENT_PRIORITY
     let worstParamKey: keyof TelemRow | null = null;
 
     for (const paramKey of TREATMENT_PRIORITY) {
@@ -374,7 +384,7 @@ export default function Live() {
 
       if (numVal < thr.val_min || numVal > thr.val_max) {
         worstParamKey = paramKey;
-        break; // first hit in priority order is the most critical
+        break;
       }
     }
 
@@ -389,60 +399,59 @@ export default function Live() {
 
     const isLow = numVal < thr.val_min;
 
-  const soilParamAlias: Partial<Record<keyof TelemRow, string>> = {
-    ph:       'Soil pH',
-    temp_c:   'Soil Temperature',
-    moist_pct:'Soil Moisture',
-    ec_ms:    'EC',
-    n_mgkg:   'Nitrogen',
-    p_mgkg:   'Phosphorus',
-    k_mgkg:   'Potassium',
-  };
+    const soilParamAlias: Partial<Record<keyof TelemRow, string>> = {
+      ph:       'Soil pH',
+      temp_c:   'Soil Temperature',
+      moist_pct:'Soil Moisture',
+      ec_ms:    'EC',
+      n_mgkg:   'Nitrogen',
+      p_mgkg:   'Phosphorus',
+      k_mgkg:   'Potassium',
+    };
 
-  const soilParamLabel = soilParamAlias[worstParamKey] ?? paramLabel;
+    const soilParamLabel = soilParamAlias[worstParamKey] ?? paramLabel;
 
-  console.log('worstParamKey:', worstParamKey);
-  console.log('soilParamLabel:', soilParamLabel);
-  console.log('isLow:', isLow);
-  console.log('altCropRecommendations:', altCropRecommendations);
-  console.log('Trying to match soil_param:', soilParamLabel);
-  altCropRecommendations.forEach(rec => {
-    console.log('  DB row:', rec.soil_param, '|', rec.reading_range, '| match?', rec.soil_param?.toLowerCase() === soilParamLabel.toLowerCase());
-  });
+    console.log('worstParamKey:', worstParamKey);
+    console.log('soilParamLabel:', soilParamLabel);
+    console.log('isLow:', isLow);
+    console.log('altCropRecommendations:', altCropRecommendations);
+    console.log('Trying to match soil_param:', soilParamLabel);
+    altCropRecommendations.forEach(rec => {
+      console.log('  DB row:', rec.soil_param, '|', rec.reading_range, '| match?', rec.soil_param?.toLowerCase() === soilParamLabel.toLowerCase());
+    });
 
-  const altMatches = altCropRecommendations.filter((rec) => {
-    const paramMatch = rec.soil_param?.toLowerCase() === soilParamLabel.toLowerCase();
-    const rangeStr = rec.reading_range?.toLowerCase() ?? '';
-    if (isLow) return paramMatch && (rangeStr.includes('low') || rangeStr.includes('<') || rangeStr.includes('acidic') || rangeStr.includes('defici'));
-    else return paramMatch && (rangeStr.includes('high') || rangeStr.includes('>') || rangeStr.includes('alkaline') || rangeStr.includes('excess'));
-  });
+    const altMatches = altCropRecommendations.filter((rec) => {
+      const paramMatch = rec.soil_param?.toLowerCase() === soilParamLabel.toLowerCase();
+      const rangeStr = rec.reading_range?.toLowerCase() ?? '';
+      if (isLow) return paramMatch && (rangeStr.includes('low') || rangeStr.includes('<') || rangeStr.includes('acidic') || rangeStr.includes('defici'));
+      else return paramMatch && (rangeStr.includes('high') || rangeStr.includes('>') || rangeStr.includes('alkaline') || rangeStr.includes('excess'));
+    });
 
-  const altMatch = altMatches.find((rec) => {
-    const recCrop = String(rec.recommended_crop).toLowerCase();
-    if (recCrop.includes(' or ')) {
-      const options = recCrop.split(' or ').map((c: string) => c.trim());
-      return options.some((c: string) => c !== String(crop).toLowerCase());
-    }
-    return recCrop !== String(crop).toLowerCase();
-  });
+    const altMatch = altMatches.find((rec) => {
+      const recCrop = String(rec.recommended_crop).toLowerCase();
+      if (recCrop.includes(' or ')) {
+        const options = recCrop.split(' or ').map((c: string) => c.trim());
+        return options.some((c: string) => c !== String(crop).toLowerCase());
+      }
+      return recCrop !== String(crop).toLowerCase();
+    });
 
     let recommendedCrop: string | null = altMatch?.recommended_crop ?? null;
 
     if (recommendedCrop) {
       const cropString = String(recommendedCrop);
       if (cropString.includes(' or ')) {
-      const crops = cropString.split(' or ').map(c => c.trim());
-      const differentCrop = crops.find(c => c.toLowerCase() !== String(crop).toLowerCase());
-      recommendedCrop = differentCrop || crops[0];
+        const crops = cropString.split(' or ').map(c => c.trim());
+        const differentCrop = crops.find(c => c.toLowerCase() !== String(crop).toLowerCase());
+        recommendedCrop = differentCrop || crops[0];
+      }
     }
-  }
 
-  if (!recommendedCrop) {
-    return `• Soil conditions are suboptimal (${paramLabel} is ${isLow ? 'LOW' : 'HIGH'}) but no specific alternative crop found in database. Consider consulting your agronomist.`;
-  }
+    if (!recommendedCrop) {
+      return `• Soil conditions are suboptimal (${paramLabel} is ${isLow ? 'LOW' : 'HIGH'}) but no specific alternative crop found in database. Consider consulting your agronomist.`;
+    }
 
-  return `• Based on your soil conditions (${paramLabel} is ${isLow ? 'LOW' : 'HIGH'}), consider switching to: ${recommendedCrop}.\n\n  Justification: ${altMatch?.justification ?? 'Better suited to current soil conditions.'}`;
-  
+    return `• Based on your soil conditions (${paramLabel} is ${isLow ? 'LOW' : 'HIGH'}), consider switching to: ${recommendedCrop}.\n\n  Justification: ${altMatch?.justification ?? 'Better suited to current soil conditions.'}`;
   }
 
   return (
@@ -580,7 +589,7 @@ export default function Live() {
                     k_mgkg:    pred.avg_k_mgkg,
                     moist_pct: pred.avg_moist_pct,
                     temp_c:    pred.avg_temp_c,
-                    })}
+                  })}
                 </div> 
               </div>
             ))

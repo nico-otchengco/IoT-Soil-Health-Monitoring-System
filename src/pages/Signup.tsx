@@ -25,9 +25,6 @@ export function Signup({ onSwitchToLogin, onSignupSuccess }: SignupProps) {
 
     setIsLoading(true);
 
-
-
-    // 1. Verify the device token exists in the device table
     const { data: device, error: deviceError } = await sb
       .from('device')
       .select('id, ing_tok')
@@ -40,57 +37,49 @@ export function Signup({ onSwitchToLogin, onSignupSuccess }: SignupProps) {
       return;
     }
 
-    // After verifying device exists, add this check:
     const { data: existingLink } = await sb
-        .from('user_device')
-        .select('user_id')
-        .eq('dev_id', device.id)
-        .single();
+      .from('user_device')
+      .select('user_id')
+      .eq('dev_id', device.id)
+      .maybeSingle();
 
     if (existingLink) {
-        setError('This device token is already registered to another account.');
-        setIsLoading(false);
-        return;
-    }
-
-    // 2. Create the Supabase auth user
-    const { data: authData, error: signUpError } = await sb.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          device_id: device.id,   // store device reference in user metadata
-        },
-      },
-    });
-
-    if (signUpError) {
-      setError(signUpError.message);
+      setError('This device token is already registered to another account.');
       setIsLoading(false);
       return;
     }
 
-    const tokenRegex = /^ESP32\.[A-Z0-9]{5}\.WROOM0XC\d+$/;
+    const { data: authData, error: signUpError } = await sb.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { device_id: device.id },
+      },
+    });
 
-    if (!tokenRegex.test(deviceToken)) {
-        setError('Invalid device token format. Expected: ESP32.XXXXX.WROOM0XC1');
-        setIsLoading(false);
-        return;
+    if (signUpError || !authData.user) {
+      setError(signUpError?.message ?? 'Signup failed.');
+      setIsLoading(false);
+      return;
     }
 
-    // 3. If email confirmation is disabled in Supabase, user is immediately active
+    const { error: linkError } = await sb
+      .from('user_device')
+      .insert({
+        user_id: authData.user.id,
+        dev_id: device.id,
+      });
+
+    if (linkError) {
+      setError('Account created but device linking failed: ' + linkError.message);
+      setIsLoading(false);
+      return;
+    }
+
     if (authData.session) {
       onSignupSuccess();
     } else {
-      // Email confirmation is enabled — let the user know
       setError('Account created! Please check your email to confirm your account before signing in.');
-    }
-
-    if (authData.user) {
-        await sb.from('user_device').insert({
-        user_id: authData.user.id,
-        dev_id: device.id,
-     });
     }
 
     setIsLoading(false);
