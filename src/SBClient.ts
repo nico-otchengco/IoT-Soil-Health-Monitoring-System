@@ -19,7 +19,11 @@ sb.auth.onAuthStateChange((event) => {
   }
 
   if (event === 'SIGNED_OUT') {
+    const rememberedEmail = window.localStorage.getItem('rememberedEmail');
     window.localStorage.removeItem('smartsoil');
+    if (rememberedEmail) {
+      window.localStorage.setItem('rememberedEmail', rememberedEmail);
+    }
     window.location.href = '/login';
   }
 });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { sb } from '../SBClient';
 
 interface LoginProps {
@@ -9,13 +9,28 @@ interface LoginProps {
 export function Login({ onSwitchToSignUp, onLoginSuccess }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    if (rememberMe) {
+      localStorage.setItem('rememberedEmail', email);
+    } else {
+      localStorage.removeItem('rememberedEmail');
+    }
 
     const { error } = await sb.auth.signInWithPassword({ email, password });
 
@@ -97,7 +112,12 @@ export function Login({ onSwitchToSignUp, onLoginSuccess }: LoginProps) {
 
             <div className="form-options">
               <label className="checkbox-label">
-                <input type="checkbox" className="checkbox-input" />
+                <input
+                  type="checkbox"
+                  className="checkbox-input"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
                 <span className="checkbox-text">Remember me</span>
               </label>
               <a href="#" className="forgot-password">Forgot password?</a>
