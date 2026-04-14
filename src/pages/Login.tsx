@@ -31,53 +31,83 @@ export function Login({ onSwitchToSignUp, onLoginSuccess }: LoginProps) {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1 className="auth-title">SMARTSOIL</h1>
-          <p className="auth-subtitle">Sign in to access your dashboard</p>
+      <div className="auth-wrapper">
+
+        {/* Logo */}
+        <div className="auth-logo">
+          <img
+            src="assets/SMARTSOIL-LOGO.png"
+            alt="SmartSoil Logo"
+            style={{ width: '15rem', height: '15rem', objectFit: 'contain' }}
+          />
         </div>
+        <p className="auth-subtitle">Sign in to access your dashboard</p>
 
-        <form onSubmit={handleLogin} className="auth-form">
-          {error && <p style={{ color: 'red', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{error}</p>}
+        {/* Card */}
+        <div className="auth-card">
+          <form onSubmit={handleLogin} className="auth-form">
 
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="form-input"
-              placeholder="you@example.com"
-            />
-          </div>
+            {error && (
+              <p style={{ color: 'red', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                {error}
+              </p>
+            )}
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="form-input"
-              placeholder="Enter your password"
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">Email</label>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="M2 7l10 7 10-7"/>
+                  </svg>
+                </span>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="form-input with-icon"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
 
-          <div className="form-options">
-            <label className="checkbox-label">
-              <input type="checkbox" className="checkbox-input" />
-              <span className="checkbox-text">Remember me</span>
-            </label>
-            <a href="#" className="forgot-password">Forgot password?</a>
-          </div>
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">Password</label>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="form-input with-icon"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
 
-          <button type="submit" disabled={isLoading} className="auth-button">
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+            <div className="form-options">
+              <label className="checkbox-label">
+                <input type="checkbox" className="checkbox-input" />
+                <span className="checkbox-text">Remember me</span>
+              </label>
+              <a href="#" className="forgot-password">Forgot password?</a>
+            </div>
+
+            <button type="submit" disabled={isLoading} className="auth-button">
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
 
         <div className="auth-footer">
           <p className="auth-footer-text">

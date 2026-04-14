@@ -87,79 +87,122 @@ export function Signup({ onSwitchToLogin, onSignupSuccess }: SignupProps) {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1 className="auth-title">SMARTSOIL</h1>
-          <p className="auth-subtitle">Create your account to get started</p>
+      <div className="auth-wrapper">
+
+        {/* Logo */}
+        <div className="auth-logo">
+          <img
+            src="assets/SMARTSOIL-LOGO.png"
+            alt="SmartSoil Logo"
+            style={{ width: '15rem', height: '15rem', objectFit: 'contain' }}
+          />
         </div>
 
-        <form onSubmit={handleSignUp} className="auth-form">
-          {error && (
-            <p style={{
-              color: error.startsWith('Account created') ? 'green' : 'red',
-              fontSize: '0.85rem',
-              marginBottom: '0.5rem'
-            }}>
-              {error}
-            </p>
-          )}
+        <p className="auth-subtitle">Create your account to get started</p>
 
-          <div className="form-group">
-            <label htmlFor="signup-email" className="form-label">Email</label>
-            <input
-              id="signup-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="form-input"
-              placeholder="you@example.com"
-            />
-          </div>
+        {/* Card */}
+        <div className="auth-card">
+          <form onSubmit={handleSignUp} className="auth-form">
 
-          <div className="form-group">
-            <label htmlFor="device-token" className="form-label">Device Token</label>
-            <input
-              id="device-token"
-              type="text"
-              value={deviceToken}
-              onChange={(e) => setDeviceToken(e.target.value)}
-              required
-              className="form-input"
-              placeholder="Your device's ingestion token"
-            />
-          </div>
+            {error && (
+              <p style={{
+                color: error.startsWith('Account created') ? 'green' : 'red',
+                fontSize: '0.85rem',
+                marginBottom: '0.5rem'
+              }}>
+                {error}
+              </p>
+            )}
 
-          <div className="form-group">
-            <label htmlFor="signup-password" className="form-label">Password</label>
-            <input
-              id="signup-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="form-input"
-              placeholder="Create a password"
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="signup-email" className="form-label">Email</label>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="M2 7l10 7 10-7"/>
+                  </svg>
+                </span>
+                <input
+                  id="signup-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="form-input with-icon"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="confirm-password" className="form-label">Confirm Password</label>
-            <input
-              id="confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="form-input"
-              placeholder="Confirm your password"
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="device-token" className="form-label">Device Token</label>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                    <line x1="12" y1="18" x2="12" y2="18.5" strokeWidth="3"/>
+                  </svg>
+                </span>
+                <input
+                  id="device-token"
+                  type="text"
+                  value={deviceToken}
+                  onChange={(e) => setDeviceToken(e.target.value)}
+                  required
+                  className="form-input with-icon"
+                  placeholder="Your device's ingestion token"
+                />
+              </div>
+            </div>
 
-          <button type="submit" disabled={isLoading} className="auth-button">
-            {isLoading ? 'Creating account...' : 'Sign Up'}
-          </button>
-        </form>
+            <div className="form-group">
+              <label htmlFor="signup-password" className="form-label">Password</label>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input
+                  id="signup-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="form-input with-icon"
+                  placeholder="Create a password"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirm-password" className="form-label">Confirm Password</label>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="form-input with-icon"
+                  placeholder="Confirm your password"
+                />
+              </div>
+            </div>
+
+            <button type="submit" disabled={isLoading} className="auth-button">
+              {isLoading ? 'Creating account...' : 'Sign Up'}
+            </button>
+          </form>
+        </div>
 
         <div className="auth-footer">
           <p className="auth-footer-text">
