@@ -5,4 +5,4 @@
     { "src": "/vite.svg", "dest": "/vite.svg" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
-}
+}   
