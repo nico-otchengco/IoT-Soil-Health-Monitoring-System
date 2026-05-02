@@ -71,7 +71,11 @@ export function Signup({ onSwitchToLogin, onSignupSuccess }: SignupProps) {
       });
 
     if (linkError) {
-      setError('Account created but device linking failed: ' + linkError.message);
+      if (linkError.code === '23505') {
+        setError('This device token is already registered to another account.');
+      } else {
+        setError('Failed to link device to user. Please try again.');
+      }
       setIsLoading(false);
       return;
     }
