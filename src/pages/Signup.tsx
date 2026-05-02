@@ -37,13 +37,16 @@ export function Signup({ onSwitchToLogin, onSignupSuccess }: SignupProps) {
       return;
     }
 
-    const { data: existingLink } = await sb
-      .from('user_device')
-      .select('user_id')
-      .eq('dev_id', device.id)
-      .maybeSingle();
+    const { data: isTaken, error: takenError } = await sb
+      .rpc('is_device_taken', { token: deviceToken });
 
-    if (existingLink) {
+    if (takenError) {
+      setError('Could not verify device. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (isTaken) {
       setError('This device token is already registered to another account.');
       setIsLoading(false);
       return;
