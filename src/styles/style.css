@@ -77,6 +77,15 @@
   
 }
 
+@keyframes dashMove {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 100;
+  }
+}
+
 html {
   font-size: clamp(var(--scale-min), 1rem + 0.25vw, var(--scale-max));
   box-sizing: border-box;

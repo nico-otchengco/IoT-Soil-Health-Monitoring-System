@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-import { sb as supabase } from '../SBClient';
+import { sb as supabase } from '../../../utils/SBClient';
 
 interface SensRow {
   id: string;

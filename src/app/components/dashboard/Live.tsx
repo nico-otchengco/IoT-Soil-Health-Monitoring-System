@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { sb } from '../SBClient';
-import type { Crop, Dev, TelemRow } from '../type';
+import { sb } from '../../../utils/SBClient';
+import type { Crop, Dev, TelemRow } from '../../../type/type';
 import {
   Line,
   XAxis,

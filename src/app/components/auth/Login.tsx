@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { sb } from '../SBClient';
+import { sb } from '../../../utils/SBClient';
 
 interface LoginProps {
   onSwitchToSignUp: () => void;
