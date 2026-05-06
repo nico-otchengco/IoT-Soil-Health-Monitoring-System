@@ -542,12 +542,12 @@ function Footer() {
     <footer className="footer">
       <div className="footer__left">
         <span className="footer__logo">SmartSoil</span>
-        <span className="footer__desc">IoT Soil Monitoring · Capstone Research Project<br />Barangay Tunasan, Muntinlupa City, Philippines</span>
+        <span className="footer__desc">Designed & Developed by Gian Nico Otchengco · 2026</span>
       </div>
       <div className="footer__right">
-        {['system', 'pipeline', 'crops', 'research'].map(id => (
-          <a key={id} href={`#${id}`}>{id.charAt(0).toUpperCase() + id.slice(1)}</a>
-        ))}
+        <a href="https://github.com/nico-otchengco/IoT-Soil-Health-Monitoring-System" target="_blank" rel="noopener noreferrer" className="footer__logo">Github</a>
+        <a href="https://www.linkedin.com/in/gian-nico-otchengco-78a982383/" target="_blank" rel="noopener noreferrer" className="footer__logo">LinkedIn</a>
+        <a href="https://portfolio-gnotchengco.vercel.app" target="_blank" rel="noopener noreferrer" className="footer__logo">Portfolio</a>
       </div>
     </footer>
   )
